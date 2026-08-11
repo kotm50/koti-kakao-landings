@@ -1,0 +1,379 @@
+---
+/**
+ * 랜딩 지원 폼용 동의 상세 모달
+ * tssample/LandingConsentModal2.tsx 문구를 Astro로 이식했습니다.
+ */
+---
+
+<div
+  id="landing-consent-modal"
+  class="consent-modal"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="landing-consent-modal-title"
+>
+  <div class="consent-modal__backdrop" data-consent-close></div>
+  <div class="consent-modal__panel">
+    <div class="consent-modal__header">
+      <h2 id="landing-consent-modal-title" class="consent-modal__title"></h2>
+      <button
+        type="button"
+        class="consent-modal__icon-close"
+        data-consent-close
+        aria-label="닫기"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M18 6L6 18M6 6l12 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="consent-modal__body" id="landing-consent-modal-body"></div>
+
+    <div class="consent-modal__footer">
+      <button type="button" class="consent-modal__close-btn" data-consent-close>
+        닫기
+      </button>
+    </div>
+  </div>
+</div>
+
+{/* 모달 본문은 스크립트에서 타입별로 주입합니다 */}
+<template id="consent-content-collection">
+  <div class="consent-content">
+    <p>
+      본 세미나 및 매칭 서비스 제공을 위해 (주)코리아티엠(이하 ‘회사’)은 아래와
+      같이 개인정보를 수집 및 이용합니다.
+    </p>
+    <div>
+      <p class="consent-content__heading">수집 및 이용 목적</p>
+      <ul>
+        <li>세미나 참여 확인, 중복 참여 방지 및 응답 데이터 분석</li>
+        <li>
+          참여자의 응답 성향에 최적화된 맞춤형 서비스(채용, 상담 등) 매칭 및
+          연결 지원
+        </li>
+        <li>참여 리워드 지급 안내 및 서비스 이용 관련 본인 확인</li>
+      </ul>
+    </div>
+    <div>
+      <p class="consent-content__heading">수집 항목</p>
+      <ul>
+        <li>성명, 연락처(휴대전화번호), 연령대, 성별, 지역</li>
+        <li>
+          세미나 응답 내용 전건 및 서비스 참여 시 생성된 지원 정보 일체
+        </li>
+      </ul>
+    </div>
+    <div>
+      <p class="consent-content__heading">보유 및 이용 기간</p>
+      <p>
+        이용 목적 달성 시 혹은 이용자의 파기 요청 시까지 (단, 관계 법령에 따라
+        보존이 필요한 경우 해당 기간까지 보관)
+      </p>
+    </div>
+    <div>
+      <p class="consent-content__heading">동의 거부 권리 고지</p>
+      <p>
+        귀하는 개인정보 수집 및 이용 동의를 거부할 권리가 있습니다. 다만, 필수
+        항목 동의 거부 시 세미나 참여 및 관련 매칭 서비스 이용이 제한됩니다.
+      </p>
+    </div>
+    <div class="consent-content__appendix">
+      <p class="consent-content__heading">[별첨]</p>
+      <p class="consent-content__heading">서비스 이용 안내 및 면책 조항</p>
+      <ul>
+        <li>
+          본 세미나 제출은 해당 세미나 결과에 대한 피드백 상담 및 관련
+          서비스(채용 포함) 안내를 수락하는 의사표시를 포함합니다.
+        </li>
+        <li>
+          이용자가 입력한 정보의 허위 사실로 인해 발생하는 불이익에 대해 회사는
+          책임을 지지 않습니다.
+        </li>
+        <li>
+          회사는 광고대행 제공자로서 고객사가 제공하는 상담의 품질이나 서비스
+          내용에 대해 보증하지 않으며, 이용자와 고객사 간의 개별적 분쟁에
+          개입하지 않습니다.
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<template id="consent-content-thirdParty">
+  <div class="consent-content">
+    <p>
+      회사는 지원자의 세미나 취지를 존중하고, 보다 전문적인 정보 제공 및 기회
+      창출을 위해 아래와 같이 제3자에게 정보를 제공합니다.
+    </p>
+    <div>
+      <p class="consent-content__heading">제공받는 자</p>
+      <p>
+        본 공고 및 이벤트 페이지를 통해 연결된 해당 고객사(의뢰사) 및 서비스
+        운영사
+      </p>
+    </div>
+    <div>
+      <p class="consent-content__heading">제공받는 자의 이용 목적</p>
+      <ol>
+        <li>
+          세미나 응답 결과에 기반한 맞춤형 정보 제공 및 전문 상담 진행 (해피콜,
+          문자 등)
+        </li>
+        <li>
+          세미나 테마와 관련된 추가 혜택 안내 및 고객사 서비스(상품) 설명
+        </li>
+        <li>
+          참여자의 성향 및 이력을 바탕으로 한 관련 분야 채용 기회 제안 및 안내
+        </li>
+      </ol>
+    </div>
+    <div>
+      <p class="consent-content__heading">제공하는 항목</p>
+      <p>상기 ‘1번 항목’에서 수집된 개인정보 및 세미나 응답 데이터 일체</p>
+    </div>
+    <div>
+      <p class="consent-content__heading">보유 및 이용 기간</p>
+      <p>
+        제공받는 자의 이용 목적 달성 시까지 (상담 완료 또는 채용 전형 종료 시
+        등)
+      </p>
+    </div>
+    <div>
+      <p class="consent-content__heading">책임 제한 고지</p>
+      <p>
+        (주)코리아티엠은 정보 매개자로서 본 동의에 근거하여 정보를 전달하며,
+        전달 이후의 정보 관리 및 상담 과정에서 발생하는 모든 책임은 정보를
+        제공받는 해당 고객사에 있습니다.
+      </p>
+    </div>
+  </div>
+</template>
+
+<template id="consent-content-marketing">
+  <div class="consent-content">
+    <div>
+      <p class="consent-content__heading">이용 목적</p>
+      <p>
+        (주)코리아티엠 및 제휴 고객사의 맞춤형 이벤트, 유용 정보 및 광고성 정보
+        수신
+      </p>
+    </div>
+    <div>
+      <p class="consent-content__heading">수집 항목 및 수단</p>
+      <p>성명, 연락처 / 전화, SMS, 이메일 등</p>
+    </div>
+    <div>
+      <p class="consent-content__heading">보유 기간</p>
+      <p>동의 철회 시 또는 수집일로부터 2년</p>
+    </div>
+  </div>
+</template>
+
+<style>
+  .consent-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .consent-modal[hidden] {
+    display: none;
+  }
+
+  .consent-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .consent-modal__panel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 42rem;
+    max-height: 90vh;
+    min-height: 0;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  }
+
+  .consent-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .consent-modal__title {
+    margin: 0;
+    padding-right: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.35;
+  }
+
+  .consent-modal__icon-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+  }
+
+  .consent-modal__icon-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+
+  .consent-modal__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px;
+    font-size: 14px;
+    color: #1f2937;
+    line-height: 1.55;
+  }
+
+  .consent-modal__footer {
+    padding: 12px 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  .consent-modal__close-btn {
+    width: 100%;
+    min-height: 44px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .consent-modal__close-btn:hover {
+    background: #1d4ed8;
+  }
+
+  .consent-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .consent-content p,
+  .consent-content ul,
+  .consent-content ol {
+    margin: 0;
+  }
+
+  .consent-content ul,
+  .consent-content ol {
+    padding-left: 20px;
+  }
+
+  .consent-content li + li {
+    margin-top: 4px;
+  }
+
+  .consent-content__heading {
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+
+  .consent-content__appendix {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  @media (min-width: 640px) {
+    .consent-modal__header,
+    .consent-modal__body,
+    .consent-modal__footer {
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .consent-modal__title {
+      font-size: 18px;
+    }
+
+    .consent-modal__close-btn {
+      width: auto;
+      padding: 0 24px;
+    }
+  }
+</style>
+
+<script>
+  type ConsentType = 'collection' | 'thirdParty' | 'marketing';
+
+  const TITLES: Record<ConsentType, string> = {
+    collection: '1. 개인정보 수집 및 이용 동의 [필수]',
+    thirdParty: '2. 개인정보의 제3자 제공 동의 [필수]',
+    marketing: '3. 마케팅 활용 및 광고성 정보 수신 동의 [선택]',
+  };
+
+  const modal = document.getElementById('landing-consent-modal');
+  const titleEl = document.getElementById('landing-consent-modal-title');
+  const bodyEl = document.getElementById('landing-consent-modal-body');
+
+  function closeConsentModal() {
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  function openConsentModal(type: ConsentType) {
+    if (!modal || !titleEl || !bodyEl) return;
+
+    const template = document.getElementById(
+      `consent-content-${type}`,
+    ) as HTMLTemplateElement | null;
+    if (!template) return;
+
+    titleEl.textContent = TITLES[type];
+    bodyEl.replaceChildren(template.content.cloneNode(true));
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  // 폼 등에서 호출할 수 있도록 전역 노출
+  (window as Window & { openLandingConsentModal?: typeof openConsentModal }).openLandingConsentModal =
+    openConsentModal;
+
+  modal?.querySelectorAll('[data-consent-close]').forEach((el) => {
+    el.addEventListener('click', closeConsentModal);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && modal && !modal.hidden) {
+      closeConsentModal();
+    }
+  });
+</script>

@@ -1,0 +1,67 @@
+---
+/**
+ * 동적 랜딩 라우트
+ * getStaticPaths()로 등록된 랜딩마다 /kakao/{slug}/ 정적 HTML 생성
+ */
+import LandingLayout from '../../layouts/LandingLayout.astro';
+import SimpleLanding from '../../components/templates/SimpleLanding.astro';
+import Landing001 from '../../components/templates/Landing001.astro';
+import { getAllLandings } from '../../data/landings';
+import type { LandingConfig } from '../../lib/types';
+
+export function getStaticPaths() {
+  return getAllLandings().map((landing) => ({
+    params: { slug: landing.slug },
+    props: { landing },
+  }));
+}
+
+interface Props {
+  landing: LandingConfig;
+}
+
+const { landing } = Astro.props;
+const isLanding001 = landing.template === 'landing001';
+const isSupported =
+  landing.template === 'simple' || landing.template === 'landing001';
+---
+
+<LandingLayout
+  title={landing.title}
+  description={landing.description}
+  flush={isLanding001}
+  pageBg={isLanding001 ? '#F7F7F7' : undefined}
+  contentMaxWidth={isLanding001 ? '700px' : undefined}
+>
+  {landing.template === 'simple' && <SimpleLanding landing={landing} />}
+  {isLanding001 && <Landing001 landing={landing} />}
+
+  {
+    !isSupported && (
+      <section class="unsupported">
+        <h1>{landing.title}</h1>
+        <p>
+          템플릿 &quot;{landing.template}&quot;은 아직 구현되지 않았습니다.
+        </p>
+      </section>
+    )
+  }
+</LandingLayout>
+
+<style>
+  .unsupported {
+    padding: 24px 16px;
+    background: var(--color-surface);
+    border-radius: var(--radius);
+  }
+
+  .unsupported h1 {
+    margin: 0 0 8px;
+    font-size: 20px;
+  }
+
+  .unsupported p {
+    margin: 0;
+    color: var(--color-muted);
+  }
+</style>

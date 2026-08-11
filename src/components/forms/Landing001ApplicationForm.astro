@@ -1,0 +1,1710 @@
+---
+/**
+ * landing-001 지원 폼
+ * - tssample/LandingApplyForm3.tsx 정보 입력 영역만 Astro + vanilla JS로 이식
+ * - 시/도·시/군/구는 정적 데이터 사용
+ */
+import type { LandingConfig } from '../../lib/types';
+import { SIDO_OPTIONS } from '../../data/regions';
+import LandingConsentModal from './LandingConsentModal.astro';
+
+interface Props {
+  landing: LandingConfig;
+}
+
+const { landing } = Astro.props;
+const buttonText = landing.submitButtonText ?? '지금 지원하기';
+const accent = '#faa301';
+const currentYear = new Date().getFullYear();
+
+/** 만 19~70세에 해당하는 출생연도 */
+const birthYearOptions: number[] = [];
+for (let year = currentYear - 19; year >= currentYear - 70; year -= 1) {
+  birthYearOptions.push(year);
+}
+
+/** 달력 선택 가능 기간 (이벤트 기간) */
+const interviewMinDate = '2026-08-10';
+const interviewMaxDate = '2026-09-30';
+const interviewMaxCount = 3;
+---
+
+<form
+  class="l001-form"
+  id="landing001-form"
+  data-slug={landing.slug}
+  data-landing-id={landing.landingId}
+  data-accent={accent}
+  novalidate
+>
+  <div class="l001-card" id="l001-form-card">
+    <div id="l001-form-fields">
+    <!-- 이름 -->
+    <div class="field-row">
+      <span class="field-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+          <path
+            d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"
+            fill="currentColor"></path>
+        </svg>
+      </span>
+      <input
+        id="name"
+        name="name"
+        type="text"
+        autocomplete="name"
+        placeholder="이름"
+        maxlength="50"
+        required
+      />
+      <p class="field-error" data-error-for="name" hidden></p>
+    </div>
+
+    <!-- 휴대폰 -->
+    <div class="field-row">
+      <span class="field-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+          <path
+            d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm0 2v16h8V4H8Zm3 14h2v-1h-2v1Z"
+            fill="currentColor"></path>
+        </svg>
+      </span>
+      <input
+        id="phone"
+        name="phone"
+        type="tel"
+        inputmode="numeric"
+        autocomplete="tel"
+        placeholder="휴대폰 번호"
+        maxlength="13"
+        required
+      />
+      <p class="field-error" data-error-for="phone" hidden></p>
+    </div>
+
+    <!-- 출생연도 / 성별 -->
+    <div class="field-row field-row--split">
+      <span class="field-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+          <path
+            d="M7 3h2v2h6V3h2v2h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V3Zm12 8H5v8h14v-8Zm0-4H5v2h14V7Z"
+            fill="currentColor"></path>
+        </svg>
+      </span>
+      <div class="split-fields">
+        <div class="select-wrap">
+          <select id="birthYear" name="birthYear" required>
+            <option value="">출생연도 선택</option>
+            {birthYearOptions.map((year) => <option value={year}>{year}</option>)}
+          </select>
+          <span class="chevron" aria-hidden="true"></span>
+        </div>
+        <div class="select-wrap">
+          <select id="gender" name="gender" required>
+            <option value="">성별 선택</option>
+            <option value="여자">여자</option>
+            <option value="남자">남자</option>
+          </select>
+          <span class="chevron" aria-hidden="true"></span>
+        </div>
+      </div>
+      <p class="field-error" data-error-for="birthYear" hidden></p>
+      <p class="field-error" data-error-for="gender" hidden></p>
+    </div>
+
+    <!-- 거주지 -->
+    <div class="field-group">
+      <p class="field-group__label">거주지</p>
+      <div class="field-row field-row--split">
+        <span class="field-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path
+              d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7Zm0 9.5A2.5 2.5 0 1 0 9.5 9 2.5 2.5 0 0 0 12 11.5Z"
+              fill="currentColor"></path>
+          </svg>
+        </span>
+        <div class="split-fields">
+          <div class="select-wrap">
+            <select id="residenceSido" name="residenceSido" required>
+              <option value="">시/도 선택</option>
+              {SIDO_OPTIONS.map((sido) => <option value={sido}>{sido}</option>)}
+            </select>
+            <span class="chevron" aria-hidden="true"></span>
+          </div>
+          <div class="select-wrap">
+            <select id="residenceSigungu" name="residenceSigungu" required disabled>
+              <option value="">시/군/구 선택</option>
+            </select>
+            <span class="chevron" aria-hidden="true"></span>
+          </div>
+        </div>
+        <p class="field-error" data-error-for="residence" hidden></p>
+      </div>
+    </div>
+
+    <!-- 희망 근무 지역 -->
+    <div class="field-group">
+      <p class="field-group__label">희망 근무 지역</p>
+      <div class="field-row field-row--split">
+        <span class="field-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path
+              d="M3 21V5a2 2 0 0 1 2-2h6v18H3Zm10 0V9h6a2 2 0 0 1 2 2v10h-8ZM6 7h2v2H6V7Zm0 4h2v2H6v-2Zm0 4h2v2H6v-2Zm10-4h2v2h-2v-2Zm0 4h2v2h-2v-2Z"
+              fill="currentColor"></path>
+          </svg>
+        </span>
+        <div class="split-fields">
+          <div class="select-wrap">
+            <select id="workSido" name="workSido" required>
+              <option value="">시/도 선택</option>
+              {SIDO_OPTIONS.map((sido) => <option value={sido}>{sido}</option>)}
+            </select>
+            <span class="chevron" aria-hidden="true"></span>
+          </div>
+          <div class="select-wrap">
+            <select id="workSigungu" name="workSigungu" required disabled>
+              <option value="">시/군/구 선택</option>
+            </select>
+            <span class="chevron" aria-hidden="true"></span>
+          </div>
+        </div>
+        <p class="field-error" data-error-for="workRegion" hidden></p>
+      </div>
+    </div>
+
+    <!-- 면접/상담 희망일: 클릭 시 달력 모달 -->
+    <div
+      class="field-group interview-field"
+      id="interview-calendar"
+      data-min-date={interviewMinDate}
+      data-max-date={interviewMaxDate}
+      data-max-count={interviewMaxCount}
+    >
+      <div class="field-row field-row--interview">
+        <span class="field-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+            <path
+              d="M7 3h2v2h6V3h2v2h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2V3Zm12 8H5v8h14v-8Z"
+              fill="currentColor"></path>
+          </svg>
+        </span>
+        <div class="interview-trigger-wrap">
+          <button
+            type="button"
+            class="interview-trigger"
+            id="interview-trigger"
+            aria-haspopup="dialog"
+            aria-controls="interview-cal-modal"
+          >
+            <span class="interview-trigger__text" id="interview-trigger-text">
+              면접/상담 희망일 선택
+            </span>
+            <!-- 선택된 날짜 뱃지 (입력칸 안) -->
+            <span
+              class="cal-chips cal-chips--trigger"
+              id="cal-chips"
+              aria-live="polite"
+            ></span>
+            <span class="chevron" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p class="field-error" data-error-for="interviewDates" hidden></p>
+      </div>
+    </div>
+
+    <!-- 동의 -->
+    <div class="agree-box">
+      <div class="agree-all">
+        <label class="agree-label">
+          <input id="allAgree" name="allAgree" type="checkbox" />
+          <span class="agree-label__text agree-label__text--bold">전체 동의</span>
+        </label>
+      </div>
+
+      <div class="agree-item">
+        <label class="agree-label">
+          <input id="agreeCollection" name="agreeCollection" type="checkbox" />
+          <span class="agree-label__text">
+            <span class="required">[필수]</span> 개인정보 수집 및 이용 동의
+          </span>
+        </label>
+        <button type="button" class="agree-view" data-consent="collection">
+          내용보기
+        </button>
+      </div>
+      <p class="field-error" data-error-for="agreeCollection" hidden></p>
+
+      <div class="agree-item">
+        <label class="agree-label">
+          <input id="agreeThirdParty" name="agreeThirdParty" type="checkbox" />
+          <span class="agree-label__text">
+            <span class="required">[필수]</span> 개인정보의 제3자 제공 동의
+          </span>
+        </label>
+        <button type="button" class="agree-view" data-consent="thirdParty">
+          내용보기
+        </button>
+      </div>
+      <p class="field-error" data-error-for="agreeThirdParty" hidden></p>
+
+      <div class="agree-item">
+        <label class="agree-label">
+          <input id="agreeMarketing" name="agreeMarketing" type="checkbox" />
+          <span class="agree-label__text">
+            <span class="optional">[선택]</span> 고객사 마케팅 활용 및 광고 수신
+            동의
+          </span>
+        </label>
+        <button type="button" class="agree-view" data-consent="marketing">
+          내용보기
+        </button>
+      </div>
+    </div>
+
+    <p class="form-message" id="form-message" hidden role="status" aria-live="polite"
+    ></p>
+
+    <button class="submit-btn" id="submit-btn" type="submit">
+      {buttonText}
+    </button>
+    </div>
+
+    <!-- 지원 완료 후 표시 (중복 지원 방지) -->
+    <div class="l001-thanks" id="l001-thanks" hidden role="status" aria-live="polite">
+      <p class="l001-thanks__title">지원해주셔서 감사합니다</p>
+      <p class="l001-thanks__desc">
+        담당 직원이 신속하게 연락드리도록 하겠습니다
+      </p>
+    </div>
+  </div>
+
+  <!-- 이벤트 안내 문구 (첨부 이미지 4 하단) -->
+  <ul class="notice-list">
+    <li>-이벤트 기간: 2026.08.10 ~ 2026.09.30</li>
+    <li>
+      -기프티콘은 면접 완료 확인 후 3일 이내 등록하신 휴대폰 번호로 발송됩니다.
+    </li>
+    <li>
+      -부정 참여 또는 단순 변심, 면접 불참 시 지급이 제한될 수 있습니다.
+    </li>
+    <li>-당사 사정에 따라 예고 없이 변경될 수 있습니다.</li>
+  </ul>
+</form>
+
+<!-- 면접 희망일 달력 모달 -->
+<div
+  id="interview-cal-modal"
+  class="cal-modal"
+  hidden
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="interview-cal-modal-title"
+>
+  <div class="cal-modal__backdrop" data-cal-dismiss></div>
+  <div class="cal-modal__panel">
+    <div class="cal-modal__header">
+      <div>
+        <h2 id="interview-cal-modal-title" class="cal-modal__title">
+          면접/상담 희망일
+        </h2>
+        <p class="cal-modal__hint">평일만 선택 · 최대 3개</p>
+      </div>
+      <button
+        type="button"
+        class="cal-modal__icon-close"
+        data-cal-dismiss
+        aria-label="닫기"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M18 6L6 18M6 6l12 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="cal-modal__body">
+      <div class="cal-panel">
+        <div class="cal-nav">
+          <button type="button" class="cal-nav__btn" id="cal-prev" aria-label="이전 달">
+            ‹
+          </button>
+          <p class="cal-nav__label" id="cal-month-label"></p>
+          <button type="button" class="cal-nav__btn" id="cal-next" aria-label="다음 달">
+            ›
+          </button>
+        </div>
+        <div class="cal-weekdays" aria-hidden="true">
+          <span class="is-sun">일</span>
+          <span>월</span>
+          <span>화</span>
+          <span>수</span>
+          <span>목</span>
+          <span>금</span>
+          <span class="is-sat">토</span>
+        </div>
+        <div class="cal-days" id="cal-days" role="grid" aria-label="면접 희망일 달력"
+        ></div>
+      </div>
+
+      <div class="cal-modal__draft">
+        <p class="cal-modal__draft-label">선택한 날짜</p>
+        <div class="cal-chips cal-chips--modal" id="cal-draft-chips"></div>
+        <p class="cal-modal__error" id="cal-modal-error" hidden></p>
+      </div>
+    </div>
+
+    <div class="cal-modal__footer">
+      <button type="button" class="cal-modal__confirm" id="cal-confirm">
+        선택 완료
+      </button>
+    </div>
+  </div>
+</div>
+
+<LandingConsentModal />
+
+<style define:vars={{ accent }}>
+  .l001-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 0 16px 40px;
+  }
+
+  .l001-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  #l001-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .l001-thanks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 36px 16px;
+    text-align: center;
+  }
+
+  .l001-thanks[hidden] {
+    display: none;
+  }
+
+  .l001-thanks__title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #1f2937;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+  }
+
+  .l001-thanks__desc {
+    margin: 0;
+    font-size: 15px;
+    color: #6b7280;
+    line-height: 1.55;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-group__label {
+    margin: 0 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    column-gap: 8px;
+    row-gap: 6px;
+    align-items: center;
+  }
+
+  .field-row--split {
+    align-items: stretch;
+  }
+
+  .field-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    color: #f59e0b;
+    background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border: 1px solid #fde68a;
+  }
+
+  .field-row input[type='text'],
+  .field-row input[type='tel'] {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    outline: none;
+  }
+
+  .field-row input::placeholder {
+    color: #9ca3af;
+  }
+
+  .field-row input:focus,
+  .select-wrap select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(250, 163, 1, 0.18);
+  }
+
+  .field-row input.is-invalid,
+  .select-wrap select.is-invalid {
+    border-color: var(--color-danger);
+  }
+
+  .split-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap--full {
+    width: 100%;
+  }
+
+  .select-wrap select {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 34px 12px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    appearance: none;
+    outline: none;
+  }
+
+  .select-wrap select:disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+  }
+
+  .chevron {
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid #9ca3af;
+    border-bottom: 2px solid #9ca3af;
+    transform: translateY(-65%) rotate(45deg);
+  }
+
+  .field-error {
+    grid-column: 2 / -1;
+    margin: 0;
+    font-size: 12px;
+    color: var(--color-danger);
+  }
+
+  .agree-box {
+    margin-top: 4px;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .agree-all {
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .agree-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .agree-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #1f2937;
+  }
+
+  .agree-label input {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    flex-shrink: 0;
+    accent-color: var(--accent);
+  }
+
+  .agree-label__text--bold {
+    font-weight: 700;
+  }
+
+  .required {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .optional {
+    color: #6b7280;
+  }
+
+  .agree-view {
+    flex-shrink: 0;
+    margin-top: 1px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .form-message {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-line;
+  }
+
+  .form-message.is-success {
+    background: #e8f7ef;
+    color: var(--color-success);
+  }
+
+  .form-message.is-error {
+    background: #fdecea;
+    color: var(--color-danger);
+  }
+
+  .submit-btn {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 4px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(250, 163, 1, 0.35);
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    opacity: 0.94;
+  }
+
+  .submit-btn:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .notice-list {
+    margin: 0;
+    padding: 0 4px;
+    list-style: none;
+    color: #4b5563;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+
+  .notice-list li + li {
+    margin-top: 2px;
+  }
+
+  /* —— 면접 희망일 트리거 + 모달 달력 —— */
+  .field-row--interview {
+    align-items: start;
+  }
+
+  .interview-trigger-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .interview-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 34px 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .interview-trigger:hover,
+  .interview-trigger:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(250, 163, 1, 0.18);
+    outline: none;
+  }
+
+  .interview-trigger__text {
+    font-size: 14px;
+    color: #9ca3af;
+    line-height: 1.3;
+  }
+
+  .interview-trigger.has-value .interview-trigger__text {
+    display: none;
+  }
+
+  .interview-trigger .chevron {
+    right: 14px;
+  }
+
+  .cal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 0;
+  }
+
+  .cal-chips--trigger {
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+  }
+
+  .interview-trigger:not(.has-value) .cal-chips--trigger {
+    display: none;
+  }
+
+  /* JS 동적 생성 칩 — :global 필요 */
+  :global(.cal-chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #eff6ff;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  :global(.cal-chips--trigger .cal-chip) {
+    font-size: 11px;
+    padding: 4px 7px;
+  }
+
+  :global(.cal-chips--modal .cal-chip) {
+    font-size: 10px;
+    padding: 3px 6px;
+    gap: 3px;
+  }
+
+  :global(.cal-chip__remove) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    background: #fff;
+    color: #ef4444;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  :global(.cal-chips--modal .cal-chip__remove) {
+    width: 12px;
+    height: 12px;
+    font-size: 10px;
+  }
+
+  :global(.cal-chip__remove:hover) {
+    background: #fef2f2;
+    border-color: #f87171;
+  }
+
+  .cal-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  .cal-modal[hidden] {
+    display: none;
+  }
+
+  .cal-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  .cal-modal__panel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 380px;
+    max-height: 90vh;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  }
+
+  .cal-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 16px 16px 10px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .cal-modal__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cal-modal__hint {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .cal-modal__icon-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+  }
+
+  .cal-modal__icon-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+  }
+
+  .cal-modal__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 12px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cal-panel {
+    border: 1px solid #f3f4f6;
+    border-radius: 12px;
+    padding: 12px 8px 14px;
+    background: #fff;
+  }
+
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .cal-nav__label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  .cal-nav__btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #374151;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  .cal-nav__btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .cal-weekdays,
+  .cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+
+  .cal-weekdays span {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    padding: 6px 0 8px;
+  }
+
+  .cal-weekdays span.is-sun {
+    color: #ef4444;
+  }
+
+  .cal-weekdays span.is-sat {
+    color: #2563eb;
+  }
+
+  /*
+   * JS로 동적 생성하는 날짜 셀은 Astro scoped 속성이 없어
+   * :global 로 스타일을 적용합니다.
+   */
+  :global(.cal-day) {
+    aspect-ratio: 1;
+    min-height: 40px;
+    border: none;
+    border-radius: 999px;
+    background: #fff;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+
+  :global(.cal-day__num) {
+    color: #1f2937;
+  }
+
+  :global(.cal-day.is-sun .cal-day__num),
+  :global(.cal-day.is-holiday .cal-day__num) {
+    color: #ef4444;
+  }
+
+  :global(.cal-day.is-sat .cal-day__num) {
+    color: #2563eb;
+  }
+
+  :global(.cal-day.is-sat.is-holiday .cal-day__num) {
+    color: #ef4444;
+  }
+
+  :global(.cal-day:not(:disabled):not(.is-selected):hover) {
+    background: #f3f4f6;
+  }
+
+  :global(.cal-day.is-outside) {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  :global(.cal-day:disabled) {
+    cursor: not-allowed;
+    background: #fff;
+  }
+
+  :global(.cal-day:disabled .cal-day__num) {
+    opacity: 0.55;
+  }
+
+  :global(.cal-day.is-selected) {
+    background: #eff6ff;
+    border: 1.5px solid #93c5fd;
+    font-weight: 700;
+  }
+
+  :global(.cal-day.is-selected .cal-day__num) {
+    color: #1d4ed8;
+    opacity: 1;
+  }
+
+  :global(.cal-day.is-selected:hover) {
+    background: #dbeafe;
+  }
+
+  /* 선택된 일/공휴일도 글자색은 빨간색 유지 */
+  :global(.cal-day.is-selected.is-sun .cal-day__num),
+  :global(.cal-day.is-selected.is-holiday .cal-day__num) {
+    color: #ef4444;
+  }
+
+  :global(.cal-day.is-selected.is-sat:not(.is-holiday) .cal-day__num) {
+    color: #2563eb;
+  }
+
+  .cal-modal__draft-label {
+    margin: 0 0 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  .cal-modal__error {
+    margin: 8px 0 0;
+    font-size: 12px;
+    color: var(--color-danger);
+  }
+
+  .cal-empty {
+    margin: 0;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+
+  .cal-modal__footer {
+    padding: 12px 16px 16px;
+    border-top: 1px solid #f3f4f6;
+  }
+
+  .cal-modal__confirm {
+    width: 100%;
+    min-height: 48px;
+    border: none;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(250, 163, 1, 0.35);
+  }
+
+  .cal-modal__confirm:hover {
+    opacity: 0.94;
+  }
+</style>
+
+<script>
+  import { REGION_MAP } from '../../data/regions';
+  import { submitLanding001Application } from '../../lib/api';
+  import { fetchHolidays, toHolidayMap } from '../../lib/holidays';
+  import { validateLanding001Form } from '../../lib/validation';
+  import type { Landing001FormValues } from '../../lib/types';
+
+  const FAIL_MESSAGE =
+    '신청 처리 중 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.';
+  const THANKS_STORAGE_PREFIX = 'koti-landing-applied:';
+
+  const form = document.getElementById(
+    'landing001-form',
+  ) as HTMLFormElement | null;
+  const submitBtn = document.getElementById(
+    'submit-btn',
+  ) as HTMLButtonElement | null;
+  const formMessage = document.getElementById(
+    'form-message',
+  ) as HTMLParagraphElement | null;
+  const formFields = document.getElementById('l001-form-fields');
+  const thanksPanel = document.getElementById('l001-thanks');
+
+  if (form && submitBtn && formMessage) {
+    const slug = form.dataset.slug ?? 'landing-001';
+    const appliedStorageKey = `${THANKS_STORAGE_PREFIX}${slug}`;
+
+    /** 지원 완료 UI로 전환 (중복 지원 방지) */
+    function showThanksState() {
+      if (formFields) formFields.hidden = true;
+      if (thanksPanel) thanksPanel.hidden = false;
+      // 달력 모달 등 추가 입력 UI도 닫아 둠
+      const calModal = document.getElementById('interview-cal-modal');
+      if (calModal) calModal.hidden = true;
+      document.body.style.overflow = '';
+    }
+
+    // 이미 지원 완료한 경우 폼 대신 감사 메시지 표시 후 입력 로직 스킵
+    try {
+      if (localStorage.getItem(appliedStorageKey) === '1') {
+        showThanksState();
+        return;
+      }
+    } catch {
+      // localStorage 불가 환경은 무시
+    }
+    const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
+    const residenceSido = form.elements.namedItem(
+      'residenceSido',
+    ) as HTMLSelectElement;
+    const residenceSigungu = form.elements.namedItem(
+      'residenceSigungu',
+    ) as HTMLSelectElement;
+    const workSido = form.elements.namedItem('workSido') as HTMLSelectElement;
+    const workSigungu = form.elements.namedItem(
+      'workSigungu',
+    ) as HTMLSelectElement;
+    const allAgree = form.elements.namedItem('allAgree') as HTMLInputElement;
+    const agreeCollection = form.elements.namedItem(
+      'agreeCollection',
+    ) as HTMLInputElement;
+    const agreeThirdParty = form.elements.namedItem(
+      'agreeThirdParty',
+    ) as HTMLInputElement;
+    const agreeMarketing = form.elements.namedItem(
+      'agreeMarketing',
+    ) as HTMLInputElement;
+
+    // —— 면접 희망일: 트리거 + 모달 달력 ——
+    const calRoot = document.getElementById(
+      'interview-calendar',
+    ) as HTMLElement | null;
+    const calModal = document.getElementById(
+      'interview-cal-modal',
+    ) as HTMLElement | null;
+    const calTrigger = document.getElementById(
+      'interview-trigger',
+    ) as HTMLButtonElement | null;
+    const calTriggerText = document.getElementById(
+      'interview-trigger-text',
+    ) as HTMLElement | null;
+    const calDays = document.getElementById('cal-days') as HTMLElement | null;
+    const calMonthLabel = document.getElementById(
+      'cal-month-label',
+    ) as HTMLElement | null;
+    const calChips = document.getElementById('cal-chips') as HTMLElement | null;
+    const calDraftChips = document.getElementById(
+      'cal-draft-chips',
+    ) as HTMLElement | null;
+    const calModalError = document.getElementById(
+      'cal-modal-error',
+    ) as HTMLElement | null;
+    const calPrev = document.getElementById(
+      'cal-prev',
+    ) as HTMLButtonElement | null;
+    const calNext = document.getElementById(
+      'cal-next',
+    ) as HTMLButtonElement | null;
+    const calConfirm = document.getElementById(
+      'cal-confirm',
+    ) as HTMLButtonElement | null;
+
+    const minDateStr = calRoot?.dataset.minDate ?? '2026-08-10';
+    const maxDateStr = calRoot?.dataset.maxDate ?? '2026-09-30';
+    const maxCount = Number(calRoot?.dataset.maxCount ?? 3);
+
+    /** 폼에 확정된 면접 희망일 */
+    let confirmedInterviewDates: string[] = [];
+    /** 모달에서 편집 중인 임시 선택 */
+    let draftInterviewDates: string[] = [];
+
+    function pad2(n: number) {
+      return String(n).padStart(2, '0');
+    }
+
+    function toYmd(date: Date) {
+      return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+    }
+
+    function parseYmd(ymd: string) {
+      const [y, m, d] = ymd.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function addDays(date: Date, days: number) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    }
+
+    /**
+     * 한국 시간(Asia/Seoul) 기준 오늘 날짜
+     * 브라우저/서버 로컬 TZ와 무관하게 KST로 맞춤
+     */
+    function getTodayInKorea(): Date {
+      const ymd = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(new Date());
+      return parseYmd(ymd);
+    }
+
+    /** 현재 달력에 적용 중인 공휴일 맵 */
+    let holidayMap = new Map<string, string>();
+    /** 연도별 캐시 — 한 번 받은 연도는 API 재호출 없음 */
+    const holidayCacheByYear = new Map<number, Map<string, string>>();
+    /** 진행 중인 연도 요청 */
+    const holidayFetchingYears = new Set<number>();
+
+    const minDate = parseYmd(minDateStr);
+    const maxDate = parseYmd(maxDateStr);
+    // 오늘(KST)은 제외 — 내일부터 선택 가능
+    const todayKst = getTodayInKorea();
+    const dayAfterToday = addDays(todayKst, 1);
+    const selectableMin =
+      dayAfterToday > minDate ? dayAfterToday : minDate;
+
+    let viewYear = selectableMin.getFullYear();
+    let viewMonth = selectableMin.getMonth();
+
+    function isWeekend(date: Date) {
+      const day = date.getDay();
+      return day === 0 || day === 6;
+    }
+
+    function isHolidayYmd(ymd: string) {
+      return holidayMap.has(ymd);
+    }
+
+    function isSelectable(date: Date) {
+      const ymd = toYmd(date);
+      // 주말·공휴일 제외, 오늘 이후·이벤트 기간 내 평일만
+      if (isWeekend(date) || isHolidayYmd(ymd)) return false;
+      if (date < selectableMin || date > maxDate) return false;
+      return true;
+    }
+
+    /**
+     * 연도 단위 공휴일 로드
+     * - 캐시에 있으면 재사용
+     * - 연도가 처음일 때만 POST /holiday/dates
+     */
+    async function ensureHolidaysForYear(year: number) {
+      const cached = holidayCacheByYear.get(year);
+      if (cached) {
+        holidayMap = cached;
+        return;
+      }
+      if (holidayFetchingYears.has(year)) return;
+
+      holidayFetchingYears.add(year);
+      try {
+        const holidays = await fetchHolidays(year);
+        const map = toHolidayMap(holidays);
+        holidayCacheByYear.set(year, map);
+        // 보고 있는 연도일 때만 화면 반영
+        if (viewYear === year) {
+          holidayMap = map;
+          renderCalendar();
+        }
+      } finally {
+        holidayFetchingYears.delete(year);
+      }
+    }
+
+    void ensureHolidaysForYear(viewYear);
+
+    function setModalError(message: string | null) {
+      if (!calModalError) return;
+      if (!message) {
+        calModalError.hidden = true;
+        calModalError.textContent = '';
+        return;
+      }
+      calModalError.hidden = false;
+      calModalError.textContent = message;
+    }
+
+    /** 입력칸 안에 확정 날짜 뱃지 표시 */
+    function renderConfirmedChips() {
+      if (!calChips || !calTrigger || !calTriggerText) return;
+      calChips.innerHTML = '';
+
+      const sorted = [...confirmedInterviewDates].sort();
+      if (sorted.length === 0) {
+        calTrigger.classList.remove('has-value');
+        calTriggerText.hidden = false;
+        calTriggerText.textContent = '면접/상담 희망일 선택';
+        return;
+      }
+
+      calTrigger.classList.add('has-value');
+      calTriggerText.hidden = true;
+
+      for (const ymd of sorted) {
+        const chip = document.createElement('span');
+        chip.className = 'cal-chip';
+
+        const label = document.createElement('span');
+        label.textContent = ymd;
+        chip.appendChild(label);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'cal-chip__remove';
+        removeBtn.setAttribute('aria-label', `${ymd} 선택 해제`);
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', (event) => {
+          event.stopPropagation();
+          confirmedInterviewDates = confirmedInterviewDates.filter(
+            (d) => d !== ymd,
+          );
+          renderConfirmedChips();
+        });
+
+        chip.appendChild(removeBtn);
+        calChips.appendChild(chip);
+      }
+    }
+
+    /** 모달 안 임시 선택 칩 */
+    function renderDraftChips() {
+      if (!calDraftChips) return;
+      calDraftChips.innerHTML = '';
+
+      const sorted = [...draftInterviewDates].sort();
+      if (sorted.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'cal-empty';
+        empty.textContent = '아직 선택한 날짜가 없습니다';
+        calDraftChips.appendChild(empty);
+        return;
+      }
+
+      for (const ymd of sorted) {
+        const chip = document.createElement('span');
+        chip.className = 'cal-chip';
+        chip.textContent = ymd;
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'cal-chip__remove';
+        removeBtn.setAttribute('aria-label', `${ymd} 선택 해제`);
+        removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => {
+          draftInterviewDates = draftInterviewDates.filter((d) => d !== ymd);
+          setModalError(null);
+          renderCalendar();
+          renderDraftChips();
+        });
+
+        chip.appendChild(removeBtn);
+        calDraftChips.appendChild(chip);
+      }
+    }
+
+    function renderCalendar() {
+      if (!calDays || !calMonthLabel || !calPrev || !calNext) return;
+
+      calMonthLabel.textContent = `${viewYear}년 ${viewMonth + 1}월`;
+
+      const minMonth = new Date(
+        selectableMin.getFullYear(),
+        selectableMin.getMonth(),
+        1,
+      );
+      const maxMonth = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+      const currentMonth = new Date(viewYear, viewMonth, 1);
+      calPrev.disabled = currentMonth <= minMonth;
+      calNext.disabled = currentMonth >= maxMonth;
+
+      calDays.innerHTML = '';
+      const firstDay = new Date(viewYear, viewMonth, 1);
+      const startWeekday = firstDay.getDay();
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+      for (let i = 0; i < startWeekday; i += 1) {
+        const filler = document.createElement('button');
+        filler.type = 'button';
+        filler.className = 'cal-day is-outside';
+        filler.disabled = true;
+        filler.tabIndex = -1;
+        calDays.appendChild(filler);
+      }
+
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const date = new Date(viewYear, viewMonth, day);
+        const ymd = toYmd(date);
+        const weekday = date.getDay(); // 0=일, 6=토
+        const holidayName = holidayMap.get(ymd);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cal-day';
+        btn.dataset.date = ymd;
+        const num = document.createElement('span');
+        num.className = 'cal-day__num';
+        num.textContent = String(day);
+        btn.appendChild(num);
+
+        if (weekday === 0) btn.classList.add('is-sun');
+        if (weekday === 6) btn.classList.add('is-sat');
+        if (holidayName) {
+          btn.classList.add('is-holiday');
+          btn.title = holidayName;
+        }
+
+        const selectable = isSelectable(date);
+        const selected = draftInterviewDates.includes(ymd);
+        if (selected) btn.classList.add('is-selected');
+
+        if (!selectable) {
+          btn.disabled = true;
+        } else {
+          btn.addEventListener('click', () => {
+            if (draftInterviewDates.includes(ymd)) {
+              draftInterviewDates = draftInterviewDates.filter((d) => d !== ymd);
+              setModalError(null);
+            } else if (draftInterviewDates.length >= maxCount) {
+              setModalError(
+                `면접/상담 희망일은 최대 ${maxCount}개까지 선택할 수 있습니다.`,
+              );
+              return;
+            } else {
+              draftInterviewDates = [...draftInterviewDates, ymd];
+              setModalError(null);
+            }
+            renderCalendar();
+            renderDraftChips();
+          });
+        }
+
+        calDays.appendChild(btn);
+      }
+    }
+
+    function openCalModal() {
+      if (!calModal) return;
+      draftInterviewDates = [...confirmedInterviewDates];
+      viewYear = selectableMin.getFullYear();
+      viewMonth = selectableMin.getMonth();
+      setModalError(null);
+      renderCalendar();
+      renderDraftChips();
+      calModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+
+    /** 닫기(X/배경): 임시 선택 버리고 닫기 */
+    function dismissCalModal() {
+      if (!calModal) return;
+      draftInterviewDates = [...confirmedInterviewDates];
+      calModal.hidden = true;
+      document.body.style.overflow = '';
+      setModalError(null);
+    }
+
+    /** 선택 완료: 임시 선택을 확정하고 닫기 */
+    function confirmCalModal() {
+      confirmedInterviewDates = [...draftInterviewDates].sort();
+      renderConfirmedChips();
+      if (!calModal) return;
+      calModal.hidden = true;
+      document.body.style.overflow = '';
+      setModalError(null);
+    }
+
+    function resetInterviewCalendar() {
+      confirmedInterviewDates = [];
+      draftInterviewDates = [];
+      viewYear = selectableMin.getFullYear();
+      viewMonth = selectableMin.getMonth();
+      renderConfirmedChips();
+      dismissCalModal();
+    }
+
+    calTrigger?.addEventListener('click', openCalModal);
+    calConfirm?.addEventListener('click', confirmCalModal);
+    calModal?.querySelectorAll('[data-cal-dismiss]').forEach((el) => {
+      el.addEventListener('click', dismissCalModal);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && calModal && !calModal.hidden) {
+        dismissCalModal();
+      }
+    });
+
+    calPrev?.addEventListener('click', () => {
+      const prevYear = viewYear;
+      const prev = new Date(viewYear, viewMonth - 1, 1);
+      viewYear = prev.getFullYear();
+      viewMonth = prev.getMonth();
+
+      if (viewYear !== prevYear) {
+        const cached = holidayCacheByYear.get(viewYear);
+        if (cached) holidayMap = cached;
+        void ensureHolidaysForYear(viewYear);
+      }
+      renderCalendar();
+    });
+
+    calNext?.addEventListener('click', () => {
+      const prevYear = viewYear;
+      const next = new Date(viewYear, viewMonth + 1, 1);
+      viewYear = next.getFullYear();
+      viewMonth = next.getMonth();
+
+      if (viewYear !== prevYear) {
+        const cached = holidayCacheByYear.get(viewYear);
+        if (cached) holidayMap = cached;
+        void ensureHolidaysForYear(viewYear);
+      }
+      renderCalendar();
+    });
+
+    renderConfirmedChips();
+
+    /** 시/군/구 옵션 채우기 */
+    function fillSigungu(
+      select: HTMLSelectElement,
+      sido: string,
+      keepValue = false,
+    ) {
+      const prev = keepValue ? select.value : '';
+      select.innerHTML = '<option value="">시/군/구 선택</option>';
+      const items = REGION_MAP[sido] ?? [];
+      for (const item of items) {
+        const option = document.createElement('option');
+        option.value = item;
+        option.textContent = item;
+        select.appendChild(option);
+      }
+      select.disabled = items.length === 0;
+      if (keepValue && items.includes(prev)) {
+        select.value = prev;
+      } else {
+        select.value = '';
+      }
+    }
+
+    residenceSido.addEventListener('change', () => {
+      fillSigungu(residenceSigungu, residenceSido.value);
+    });
+
+    workSido.addEventListener('change', () => {
+      fillSigungu(workSigungu, workSido.value);
+    });
+
+    /** 휴대폰: 숫자만 입력, blur 시 하이픈 포맷 */
+    phoneInput.addEventListener('input', () => {
+      phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 11);
+    });
+
+    phoneInput.addEventListener('focus', () => {
+      phoneInput.value = phoneInput.value.replace(/-/g, '');
+    });
+
+    phoneInput.addEventListener('blur', () => {
+      const raw = phoneInput.value.replace(/-/g, '');
+      if (/^010\d{8}$/.test(raw)) {
+        phoneInput.value = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+      }
+    });
+
+    /** 전체 동의 ↔ 개별 동의 동기화 */
+    allAgree.addEventListener('change', () => {
+      const checked = allAgree.checked;
+      agreeCollection.checked = checked;
+      agreeThirdParty.checked = checked;
+      agreeMarketing.checked = checked;
+    });
+
+    function syncAllAgree() {
+      allAgree.checked =
+        agreeCollection.checked &&
+        agreeThirdParty.checked &&
+        agreeMarketing.checked;
+    }
+
+    agreeCollection.addEventListener('change', syncAllAgree);
+    agreeThirdParty.addEventListener('change', syncAllAgree);
+    agreeMarketing.addEventListener('change', syncAllAgree);
+
+    /** 동의 내용보기 모달 */
+    form.querySelectorAll<HTMLButtonElement>('[data-consent]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.consent as
+          | 'collection'
+          | 'thirdParty'
+          | 'marketing'
+          | undefined;
+        const openModal = (
+          window as Window & {
+            openLandingConsentModal?: (
+              t: 'collection' | 'thirdParty' | 'marketing',
+            ) => void;
+          }
+        ).openLandingConsentModal;
+        if (type && openModal) {
+          openModal(type);
+        }
+      });
+    });
+
+    function clearErrors() {
+      form!.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+        el.hidden = true;
+        el.textContent = '';
+      });
+      form!
+        .querySelectorAll<HTMLElement>('input, select')
+        .forEach((input) => input.classList.remove('is-invalid'));
+    }
+
+    function showErrors(errors: Record<string, string>) {
+      Object.entries(errors).forEach(([field, message]) => {
+        const errorEl = form!.querySelector<HTMLElement>(
+          `[data-error-for="${field}"]`,
+        );
+        if (errorEl) {
+          errorEl.textContent = message;
+          errorEl.hidden = false;
+        }
+
+        if (field === 'residence') {
+          residenceSido.classList.add('is-invalid');
+          residenceSigungu.classList.add('is-invalid');
+          return;
+        }
+        if (field === 'workRegion') {
+          workSido.classList.add('is-invalid');
+          workSigungu.classList.add('is-invalid');
+          return;
+        }
+
+        const input = form!.elements.namedItem(field);
+        if (
+          input instanceof HTMLInputElement ||
+          input instanceof HTMLSelectElement
+        ) {
+          if (input.type !== 'checkbox') {
+            input.classList.add('is-invalid');
+          }
+        }
+      });
+    }
+
+    function showMessage(text: string, type: 'success' | 'error') {
+      formMessage!.hidden = false;
+      formMessage!.textContent = text;
+      formMessage!.classList.remove('is-success', 'is-error');
+      formMessage!.classList.add(type === 'success' ? 'is-success' : 'is-error');
+    }
+
+    function hideMessage() {
+      formMessage!.hidden = true;
+      formMessage!.textContent = '';
+      formMessage!.classList.remove('is-success', 'is-error');
+    }
+
+    function getFormValues(): Landing001FormValues {
+      const formData = new FormData(form!);
+      return {
+        name: String(formData.get('name') ?? ''),
+        phone: String(formData.get('phone') ?? ''),
+        birthYear: String(formData.get('birthYear') ?? ''),
+        gender: String(formData.get('gender') ?? ''),
+        residence: {
+          sido: String(formData.get('residenceSido') ?? ''),
+          sigungu: String(formData.get('residenceSigungu') ?? ''),
+        },
+        workRegion: {
+          sido: String(formData.get('workSido') ?? ''),
+          sigungu: String(formData.get('workSigungu') ?? ''),
+        },
+        interviewDates: [...confirmedInterviewDates].sort(),
+        agreeCollection: formData.get('agreeCollection') === 'on',
+        agreeThirdParty: formData.get('agreeThirdParty') === 'on',
+        agreeMarketing: formData.get('agreeMarketing') === 'on',
+      };
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearErrors();
+      hideMessage();
+
+      const values = getFormValues();
+      const validation = validateLanding001Form(values);
+
+      if (!validation.valid) {
+        showErrors(validation.errors);
+        return;
+      }
+
+      submitBtn.disabled = true;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = '지원 접수 중...';
+
+      try {
+        const result = await submitLanding001Application(values);
+
+        if (result.ok) {
+          try {
+            localStorage.setItem(appliedStorageKey, '1');
+          } catch {
+            // ignore
+          }
+          showThanksState();
+        } else {
+          showMessage(result.message ?? FAIL_MESSAGE, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalLabel;
+        }
+      } catch {
+        showMessage(FAIL_MESSAGE, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    });
+  }
+</script>

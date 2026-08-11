@@ -1,0 +1,298 @@
+---
+/**
+ * simple 템플릿용 신청 폼
+ * - 이름 / 휴대전화번호 / 개인정보 수집 동의
+ * - 클라이언트 사이드 validation + API 호출
+ * - React 없이 vanilla JS (Astro script bundling)
+ */
+import type { LandingConfig } from '../../lib/types';
+
+interface Props {
+  landing: LandingConfig;
+}
+
+const { landing } = Astro.props;
+const buttonText = landing.submitButtonText ?? '신청하기';
+---
+
+<form
+  class="apply-form"
+  id="apply-form"
+  data-slug={landing.slug}
+  data-landing-id={landing.landingId}
+  novalidate
+>
+  <div class="field">
+    <label for="name">이름</label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      autocomplete="name"
+      inputmode="text"
+      placeholder="이름을 입력해주세요"
+      maxlength="50"
+      required
+    />
+    <p class="field-error" data-error-for="name" hidden></p>
+  </div>
+
+  <div class="field">
+    <label for="phone">휴대전화번호</label>
+    <input
+      id="phone"
+      name="phone"
+      type="tel"
+      autocomplete="tel"
+      inputmode="tel"
+      placeholder="010-1234-5678"
+      maxlength="20"
+      required
+    />
+    <p class="field-error" data-error-for="phone" hidden></p>
+  </div>
+
+  <div class="field field-checkbox">
+    <label class="checkbox-label">
+      <input id="privacyAgreed" name="privacyAgreed" type="checkbox" />
+      <span>개인정보 수집에 동의합니다.</span>
+    </label>
+    <p class="field-error" data-error-for="privacyAgreed" hidden></p>
+  </div>
+
+  <p class="form-message" id="form-message" hidden role="status" aria-live="polite"></p>
+
+  <button class="submit-btn" id="submit-btn" type="submit">
+    {buttonText}
+  </button>
+</form>
+
+<style>
+  .apply-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .field input[type='text'],
+  .field input[type='tel'] {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--color-text);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .field input[type='text']:focus,
+  .field input[type='tel']:focus {
+    border-color: #c6a700;
+  }
+
+  .field input.is-invalid {
+    border-color: var(--color-danger);
+  }
+
+  .field-checkbox {
+    margin-top: 2px;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+
+  .checkbox-label input[type='checkbox'] {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    flex-shrink: 0;
+    accent-color: #f5d000;
+  }
+
+  .field-error {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-danger);
+  }
+
+  .form-message {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-line;
+  }
+
+  .form-message.is-success {
+    background: #e8f7ef;
+    color: var(--color-success);
+  }
+
+  .form-message.is-error {
+    background: #fdecea;
+    color: var(--color-danger);
+  }
+
+  .submit-btn {
+    width: 100%;
+    min-height: 52px;
+    margin-top: 6px;
+    border: none;
+    border-radius: 12px;
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.1s ease;
+  }
+
+  .submit-btn:hover:not(:disabled) {
+    opacity: 0.92;
+  }
+
+  .submit-btn:active:not(:disabled) {
+    transform: scale(0.99);
+  }
+
+  .submit-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+</style>
+
+<script>
+  import { submitLandingApplication } from '../../lib/api';
+  import { buildSimpleLandingPayload } from '../../lib/mappers';
+  import { validateSimpleForm } from '../../lib/validation';
+  import type { SimpleFormValues } from '../../lib/types';
+
+  const SUCCESS_MESSAGE = '신청이 완료되었습니다.';
+  const FAIL_MESSAGE =
+    '신청 처리 중 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.';
+
+  const form = document.getElementById('apply-form') as HTMLFormElement | null;
+  const submitBtn = document.getElementById(
+    'submit-btn',
+  ) as HTMLButtonElement | null;
+  const formMessage = document.getElementById(
+    'form-message',
+  ) as HTMLParagraphElement | null;
+
+  if (form && submitBtn && formMessage) {
+    const slug = form.dataset.slug ?? '';
+    const landingId = form.dataset.landingId ?? '';
+
+    /** 필드 오류 UI 초기화 */
+    function clearErrors() {
+      form!.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+        el.hidden = true;
+        el.textContent = '';
+      });
+      form!.querySelectorAll<HTMLInputElement>('input').forEach((input) => {
+        input.classList.remove('is-invalid');
+      });
+    }
+
+    /** 필드별 오류 표시 */
+    function showErrors(errors: Record<string, string>) {
+      Object.entries(errors).forEach(([field, message]) => {
+        const errorEl = form!.querySelector<HTMLElement>(
+          `[data-error-for="${field}"]`,
+        );
+        if (errorEl) {
+          errorEl.textContent = message;
+          errorEl.hidden = false;
+        }
+
+        const input = form!.elements.namedItem(field);
+        if (input instanceof HTMLInputElement && input.type !== 'checkbox') {
+          input.classList.add('is-invalid');
+        }
+      });
+    }
+
+    /** 상단/하단 상태 메시지 */
+    function showMessage(text: string, type: 'success' | 'error') {
+      formMessage!.hidden = false;
+      formMessage!.textContent = text;
+      formMessage!.classList.remove('is-success', 'is-error');
+      formMessage!.classList.add(type === 'success' ? 'is-success' : 'is-error');
+    }
+
+    function hideMessage() {
+      formMessage!.hidden = true;
+      formMessage!.textContent = '';
+      formMessage!.classList.remove('is-success', 'is-error');
+    }
+
+    /** 폼 값 수집 */
+    function getFormValues(): SimpleFormValues {
+      const formData = new FormData(form!);
+      return {
+        name: String(formData.get('name') ?? ''),
+        phone: String(formData.get('phone') ?? ''),
+        privacyAgreed: formData.get('privacyAgreed') === 'on',
+      };
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      clearErrors();
+      hideMessage();
+
+      const values = getFormValues();
+      const validation = validateSimpleForm(values);
+
+      if (!validation.valid) {
+        showErrors(validation.errors);
+        return;
+      }
+
+      // 중복 클릭 방지
+      submitBtn.disabled = true;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = '신청 중...';
+
+      try {
+        // 랜딩별 payload 생성 → 공통 API 호출
+        const payload = buildSimpleLandingPayload(slug, landingId, values);
+        const result = await submitLandingApplication(payload);
+
+        if (result.ok) {
+          showMessage(SUCCESS_MESSAGE, 'success');
+          form.reset();
+        } else {
+          showMessage(FAIL_MESSAGE, 'error');
+        }
+      } catch {
+        showMessage(FAIL_MESSAGE, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+      }
+    });
+  }
+</script>

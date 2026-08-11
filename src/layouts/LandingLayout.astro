@@ -1,0 +1,129 @@
+---
+/**
+ * 랜딩페이지 공통 레이아웃
+ * - 모바일 우선
+ * - 콘텐츠 최대 너비 약 480px
+ * - 카카오톡 인앱 브라우저 가독성 고려
+ */
+interface Props {
+  title: string;
+  description?: string;
+  /** true면 페이지 패딩 없이 풀블리드(이미지 랜딩용) */
+  flush?: boolean;
+  /** 페이지 배경색 오버라이드 */
+  pageBg?: string;
+  /**
+   * 콘텐츠 최대 너비
+   * 이미지 랜딩(landing001)은 샘플과 동일하게 700px
+   */
+  contentMaxWidth?: string;
+}
+
+const {
+  title,
+  description = '',
+  flush = false,
+  pageBg,
+  contentMaxWidth,
+} = Astro.props;
+
+/** 페이지/컨테이너에 주입할 CSS 변수 */
+const pageStyle = [
+  pageBg ? `--page-bg: ${pageBg}` : '',
+  contentMaxWidth ? `--content-max-width: ${contentMaxWidth}` : '',
+]
+  .filter(Boolean)
+  .join('; ');
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div
+      class:list={['page', { 'page--flush': flush }]}
+      style={pageStyle || undefined}
+    >
+      <main class="container">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --color-bg: #f5f6f8;
+    --color-surface: #ffffff;
+    --color-text: #1a1a1a;
+    --color-muted: #666666;
+    --color-border: #e2e5eb;
+    --color-primary: #fee500;
+    --color-primary-text: #191919;
+    --color-danger: #d93025;
+    --color-success: #0f7b3f;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --max-width: 480px;
+    --font-family:
+      'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+  }
+
+  body {
+    font-family: var(--font-family);
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+
+  .page {
+    min-height: 100dvh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 40px;
+    background: var(--page-bg, var(--color-bg));
+  }
+
+  .page--flush {
+    padding: 0;
+  }
+
+  .container {
+    width: 100%;
+    max-width: var(--content-max-width, var(--max-width));
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>

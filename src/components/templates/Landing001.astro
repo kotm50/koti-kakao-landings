@@ -1,0 +1,110 @@
+---
+/**
+ * landing-001 템플릿
+ * section1~3 이미지 + 정보 입력 폼
+ */
+import type { LandingConfig } from '../../lib/types';
+import section1 from '../../assets/landing001/section1.png';
+import section2 from '../../assets/landing001/section2.png';
+import section3 from '../../assets/landing001/section3.png';
+import Landing001ApplicationForm from '../forms/Landing001ApplicationForm.astro';
+
+interface Props {
+  landing: LandingConfig;
+}
+
+const { landing } = Astro.props;
+---
+
+{/* LandingApplyForm3와 동일: max-w-[700px] mx-auto */}
+<section class="landing001">
+  <h1 class="sr-only">{landing.title}</h1>
+
+  <!-- 히어로: 면접만 보면 선물이 팡팡! -->
+  <div class="section-image">
+    <img
+      src={section1.src}
+      width={section1.width}
+      height={section1.height}
+      alt="면접만 보면 선물이 팡팡! 코리아파트너즈 특별 이벤트"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
+  </div>
+
+  <!-- 혜택: 딱 9월까지! -->
+  <div class="section-image">
+    <img
+      src={section2.src}
+      width={section2.width}
+      height={section2.height}
+      alt="딱 9월까지! 면접 완료마다 100% 지급, 전 지역 어디서든 참여 가능"
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <!-- 지원 헤더: 10초만에 간편 지원! -->
+  <div class="section-image section-image--form-head">
+    <img
+      src={section3.src}
+      width={section3.width}
+      height={section3.height}
+      alt="10초만에 간편 지원! 내 집 앞 맞춤 채용 정보를 빠르게 안내해 드립니다."
+      loading="lazy"
+      decoding="async"
+    />
+  </div>
+
+  <!-- 정보 입력 영역 -->
+  <div class="form-area" id="apply-form">
+    <Landing001ApplicationForm landing={landing} />
+  </div>
+</section>
+
+<style>
+  /* 샘플: mx-auto flex w-full max-w-[700px] flex-col */
+  .landing001 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #fff9eb;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .section-image {
+    width: 100%;
+    line-height: 0;
+    background: #fff9eb;
+  }
+
+  .section-image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .section-image--form-head {
+    margin-bottom: -4px;
+  }
+
+  .form-area {
+    background: #fff4e4;
+    padding-top: 4px;
+  }
+</style>
