@@ -1,7 +1,7 @@
 /**
  * 공휴일 목록 조회
  *
- * POST {KOTI_API_BASE_URL}/holiday/dates
+ * POST {PUBLIC_KOTI_API_BASE_URL}/holiday/dates
  * body: { year: "2026" }
  * response:
  * {
@@ -17,7 +17,10 @@ export type HolidayInfo = {
 };
 
 function getApiBaseUrl(): string | undefined {
-  const baseUrl = import.meta.env.KOTI_API_BASE_URL as string | undefined;
+  // Astro/Vite: 브라우저 번들에는 PUBLIC_ 접두사 변수만 노출됨
+  const baseUrl = import.meta.env.PUBLIC_KOTI_API_BASE_URL as
+    | string
+    | undefined;
   if (!baseUrl || baseUrl.trim() === "") return undefined;
   return baseUrl.replace(/\/$/, "");
 }

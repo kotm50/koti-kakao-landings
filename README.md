@@ -42,10 +42,11 @@ cp .env.example .env
 `.env` 예시:
 
 ```env
-KOTI_API_BASE_URL=https://api.example.com
+PUBLIC_KOTI_API_BASE_URL=https://api.example.com
 ```
 
-> `PUBLIC_` 접두사는 **브라우저에 노출되는 공개 값**입니다.
+> Astro/Vite는 `PUBLIC_` 접두사 변수만 **브라우저에 노출**합니다.
+> `KOTI_API_BASE_URL`(접두사 없음)은 클라이언트 폼/API 호출에 전달되지 않습니다.
 > API Secret, DB 비밀번호, Private Key 등은 절대 넣지 마세요.
 
 ---
@@ -306,12 +307,12 @@ await submitLandingApplication(payload);
 
 | 변수                | 설명                                    |
 | ------------------- | --------------------------------------- |
-| `KOTI_API_BASE_URL` | 프론트에서 호출하는 공개 API 베이스 URL |
+| `PUBLIC_KOTI_API_BASE_URL` | 프론트에서 호출하는 공개 API 베이스 URL (`PUBLIC_` 필수) |
 
 신청 API (임시):
 
 ```text
-POST {KOTI_API_BASE_URL}/api/landing/apply
+POST {PUBLIC_KOTI_API_BASE_URL}/api/landing/apply
 ```
 
 로컬:
@@ -348,10 +349,10 @@ GitHub Repository를 Cloudflare Pages에 연결할 때:
 
 환경변수 (빌드 시점에 주입):
 
-- `KOTI_API_BASE_URL` = 실제 API 주소
+- `PUBLIC_KOTI_API_BASE_URL` = 실제 API 주소
 
 > Astro/Vite의 `PUBLIC_` 변수는 **빌드 타임**에 HTML/JS에 포함됩니다.
-> Cloudflare Pages 대시보드의 Environment Variables에 설정한 뒤 빌드해야 반영됩니다.
+> Cloudflare Pages 대시보드의 Environment Variables에 `PUBLIC_KOTI_API_BASE_URL`로 설정한 뒤 **다시 빌드**해야 반영됩니다.
 
 주의:
 

@@ -18,7 +18,10 @@ import { buildLanding001Payloads } from "./mappers/landing-001";
 const APPLY_PATH = "/api/landing/apply";
 
 function getApiBaseUrl(): string | undefined {
-  const baseUrl = import.meta.env.KOTI_API_BASE_URL as string | undefined;
+  // Astro/Vite: 브라우저(클라이언트) 번들에는 PUBLIC_ 접두사 변수만 노출됨
+  const baseUrl = import.meta.env.PUBLIC_KOTI_API_BASE_URL as
+    | string
+    | undefined;
   if (!baseUrl || baseUrl.trim() === "") {
     return undefined;
   }
@@ -35,7 +38,7 @@ export async function submitLandingApplication(
 
   if (!baseUrl) {
     console.warn(
-      "[koti-kakao-landings] KOTI_API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인하세요.",
+      "[koti-kakao-landings] PUBLIC_KOTI_API_BASE_URL이 설정되지 않았습니다. .env / Cloudflare 환경변수를 확인하세요.",
     );
     return {
       ok: false,
@@ -113,7 +116,7 @@ export async function submitLanding001Application(
 
   if (!baseUrl) {
     console.warn(
-      "[koti-kakao-landings] KOTI_API_BASE_URL이 설정되지 않았습니다. .env 파일을 확인하세요.",
+      "[koti-kakao-landings] PUBLIC_KOTI_API_BASE_URL이 설정되지 않았습니다. .env / Cloudflare 환경변수를 확인하세요.",
     );
     return {
       ok: false,
