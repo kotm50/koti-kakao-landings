@@ -390,13 +390,19 @@ const interviewMaxCount = 3;
     gap: 12px;
   }
 
+  /* display:flex 가 [hidden]의 display:none 을 덮어쓰지 않도록 */
+  #l001-form-fields[hidden] {
+    display: none;
+  }
+
   .l001-thanks {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 36px 16px;
+    padding: 48px 16px;
+    min-height: 200px;
     text-align: center;
   }
 
@@ -1073,10 +1079,18 @@ const interviewMaxCount = 3;
     const slug = form.dataset.slug ?? 'landing-001';
     const appliedStorageKey = `${THANKS_STORAGE_PREFIX}${slug}`;
 
-    /** 지원 완료 UI로 전환 (중복 지원 방지) */
+    /** 지원 완료 UI로 전환 — 입력폼·버튼을 숨기고 같은 카드 자리에 감사 문구 표시 */
     function showThanksState() {
-      if (formFields) formFields.hidden = true;
-      if (thanksPanel) thanksPanel.hidden = false;
+      if (formFields) {
+        formFields.hidden = true;
+        formFields.setAttribute('aria-hidden', 'true');
+      }
+      if (thanksPanel) {
+        thanksPanel.hidden = false;
+      }
+      // 제출 버튼이 남아 있지 않도록 비활성화 (hidden 예외 대비)
+      submitBtn.disabled = true;
+      submitBtn.setAttribute('aria-hidden', 'true');
       // 달력 모달 등 추가 입력 UI도 닫아 둠
       const calModal = document.getElementById('interview-cal-modal');
       if (calModal) calModal.hidden = true;
