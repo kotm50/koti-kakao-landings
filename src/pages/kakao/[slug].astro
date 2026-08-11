@@ -8,6 +8,7 @@ import SimpleLanding from '../../components/templates/SimpleLanding.astro';
 import Landing001 from '../../components/templates/Landing001.astro';
 import { getAllLandings } from '../../data/landings';
 import type { LandingConfig } from '../../lib/types';
+import landing001OgImage from '../../assets/landing001/og_image.png';
 
 export function getStaticPaths() {
   return getAllLandings().map((landing) => ({
@@ -32,6 +33,7 @@ const isSupported =
   flush={isLanding001}
   pageBg={isLanding001 ? '#F7F7F7' : undefined}
   contentMaxWidth={isLanding001 ? '700px' : undefined}
+  ogImage={isLanding001 ? landing001OgImage : undefined}
 >
   {landing.template === 'simple' && <SimpleLanding landing={landing} />}
   {isLanding001 && <Landing001 landing={landing} />}

@@ -10,6 +10,8 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   output: 'static',
   trailingSlash: 'always',
+  // og:image 절대 URL용 (Cloudflare 등에서 PUBLIC_SITE_URL 설정 권장)
+  site: process.env.PUBLIC_SITE_URL || undefined,
   build: {
     format: 'directory',
   },
