@@ -1061,7 +1061,6 @@ const interviewMaxCount = 3;
 
   const FAIL_MESSAGE =
     '신청 처리 중 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.';
-  const THANKS_STORAGE_PREFIX = 'koti-landing-applied:';
 
   const form = document.getElementById(
     'landing001-form',
@@ -1076,10 +1075,9 @@ const interviewMaxCount = 3;
   const thanksPanel = document.getElementById('l001-thanks');
 
   if (form && submitBtn && formMessage) {
-    const slug = form.dataset.slug ?? 'landing-001';
-    const appliedStorageKey = `${THANKS_STORAGE_PREFIX}${slug}`;
-
-    /** 지원 완료 UI로 전환 — 입력폼·버튼을 숨기고 같은 카드 자리에 감사 문구 표시 */
+    /** 지원 완료 UI로 전환 — 입력폼·버튼을 숨기고 같은 카드 자리에 감사 문구 표시
+     *  (세션 한정: 새로고침하면 폼이 다시 표시되어 재지원 가능)
+     */
     function showThanksState() {
       if (formFields) {
         formFields.hidden = true;
@@ -1097,19 +1095,6 @@ const interviewMaxCount = 3;
       document.body.style.overflow = '';
     }
 
-    // 이미 지원 완료한 경우 폼 대신 감사 메시지 표시 후 입력 로직 스킵
-    // (Astro <script>는 ES 모듈이라 최상위 return 불가 → 플래그로 분기)
-    let alreadyApplied = false;
-    try {
-      if (localStorage.getItem(appliedStorageKey) === '1') {
-        showThanksState();
-        alreadyApplied = true;
-      }
-    } catch {
-      // localStorage 불가 환경은 무시
-    }
-
-    if (!alreadyApplied) {
     const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
     const residenceSido = form.elements.namedItem(
       'residenceSido',
@@ -1707,11 +1692,6 @@ const interviewMaxCount = 3;
         const result = await submitLanding001Application(values);
 
         if (result.ok) {
-          try {
-            localStorage.setItem(appliedStorageKey, '1');
-          } catch {
-            // ignore
-          }
           showThanksState();
         } else {
           showMessage(result.message ?? FAIL_MESSAGE, 'error');
@@ -1724,6 +1704,5 @@ const interviewMaxCount = 3;
         submitBtn.textContent = originalLabel;
       }
     });
-    } // end if (!alreadyApplied)
   }
 </script>

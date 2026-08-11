@@ -5,14 +5,14 @@
  * 그대로 사용합니다.
  */
 
-import type { ApplicationPayload, Landing001FormValues } from '../types';
+import type { ApplicationPayload, Landing001FormValues } from "../types";
 
 /** 요청값 고정 고객사 코드 */
-export const LANDING001_COM_CODE = 'cchat1749';
+export const LANDING001_COM_CODE = "cchat1749";
 
 /** yyyy-MM-dd HH:mm:ss (date-fns format 대체) */
 export function formatDateTime(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
@@ -30,17 +30,19 @@ export function buildLanding001Memo(
   workArea: string,
   sortedInterviewDates: string[],
 ): string {
-  const parts = ['메타 랜딩페이지 지원자'];
+  const parts = ["카카오 랜딩페이지 지원자"];
 
   if (workArea && workArea !== applyArea) {
     parts.push(`희망근무: ${workArea}`);
   }
 
   if (sortedInterviewDates.length > 0) {
-    parts.push(`면접희망일: ${sortedInterviewDates.join(', ')}`);
+    parts.push(`면접희망일: ${sortedInterviewDates.join(", ")}`);
   }
 
-  return parts.length === 1 ? parts[0] : `${parts[0]} / ${parts.slice(1).join(' / ')}`;
+  return parts.length === 1
+    ? parts[0]
+    : `${parts[0]} / ${parts.slice(1).join(" / ")}`;
 }
 
 export type Landing001BuiltPayloads = {
@@ -79,7 +81,7 @@ export function buildLanding001Payloads(
 
   const now = new Date();
   const formattedNow = formatDateTime(now);
-  const applyStatus = options?.applyStatus || '신규DB';
+  const applyStatus = options?.applyStatus || "신규DB";
   const applySnum = `${validatedBirthYear}0000`;
 
   const checkPayload: ApplicationPayload = {
@@ -107,7 +109,7 @@ export function buildLanding001Payloads(
     landingPayload.apply_interview = sortedInterviewDates;
   }
 
-  if (typeof options?.pageNum === 'number') {
+  if (typeof options?.pageNum === "number") {
     landingPayload.page_num = options.pageNum + 1;
   }
 
@@ -123,19 +125,19 @@ export function buildLanding001Payloads(
     applyContact: validatedPhone,
     applySnum,
     applySex: validatedGender,
-    applyPath: '랜딩',
+    applyPath: "랜딩",
     applyAddr: applyArea,
     applyAreas,
     applyDate: now,
     lastModified: now,
     applyStatus,
-    applySubStatus: ' ',
-    applyBloodtype: '-',
+    applySubStatus: " ",
+    applyBloodtype: "-",
     applyMemo: memo,
-    applyFile: '',
-    managerId: 'landing',
-    contactManager: '',
-    interviewTime: '00월 00일 00시',
+    applyFile: "",
+    managerId: "landing",
+    contactManager: "",
+    interviewTime: "00월 00일 00시",
     applyCareer: 0,
     statusHistory: `${formattedNow} 지원 | 랜딩페이지`,
     interviewMemo: memo,
