@@ -1084,14 +1084,18 @@ const interviewMaxCount = 3;
     }
 
     // 이미 지원 완료한 경우 폼 대신 감사 메시지 표시 후 입력 로직 스킵
+    // (Astro <script>는 ES 모듈이라 최상위 return 불가 → 플래그로 분기)
+    let alreadyApplied = false;
     try {
       if (localStorage.getItem(appliedStorageKey) === '1') {
         showThanksState();
-        return;
+        alreadyApplied = true;
       }
     } catch {
       // localStorage 불가 환경은 무시
     }
+
+    if (!alreadyApplied) {
     const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
     const residenceSido = form.elements.namedItem(
       'residenceSido',
@@ -1706,5 +1710,6 @@ const interviewMaxCount = 3;
         submitBtn.textContent = originalLabel;
       }
     });
+    } // end if (!alreadyApplied)
   }
 </script>
